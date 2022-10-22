@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Coyn", "Coyn\Coyn.csproj", "{1CDEEEF4-4F82-498D-8BC2-C2CDA4C5A19B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1CDEEEF4-4F82-498D-8BC2-C2CDA4C5A19B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1CDEEEF4-4F82-498D-8BC2-C2CDA4C5A19B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1CDEEEF4-4F82-498D-8BC2-C2CDA4C5A19B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1CDEEEF4-4F82-498D-8BC2-C2CDA4C5A19B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
