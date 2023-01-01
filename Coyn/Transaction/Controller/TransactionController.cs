@@ -1,23 +1,25 @@
-using Coyn.Plaid;
+using Coyn.Transaction.Model;
+using Coyn.Transaction.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Coyn.Transaction.Controller;
 
 [ApiController]
-[Route("user"), Authorize]
+[Route("transaction"), Authorize]
 public class TransactionController: Microsoft.AspNetCore.Mvc.Controller
 {
-   private readonly IPlaidService _plaidService;
-
-   public TransactionController(IPlaidService plaidService)
+   private readonly ITransactionService _transactionService;
+   
+   public TransactionController(ITransactionService transactionService)
    {
-      _plaidService = plaidService;
+      _transactionService = transactionService;
    }
 
-   public Task<ActionResult<IEnumerable<Going.Plaid.Entity.Transaction>>> GetTransactions()
+   [HttpPost]
+   public async Task<TransactionsResponse> GetTransactions(TransactionsRequest transactionsRequest)
    {
-      throw new NotImplementedException();
+      return await _transactionService.GetTransactionsAsync(transactionsRequest);
    }
    
 }

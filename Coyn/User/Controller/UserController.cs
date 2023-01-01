@@ -62,7 +62,6 @@ public class UserController: Microsoft.AspNetCore.Mvc.Controller
     {
         var userResponse = await _userService.SignInUserAsync(signInUserRequest);
         var tokenResponse = await _tokenService.CreateServerToken(userResponse);
-        Console.WriteLine("Hello World!!!!!!");
         return Ok(tokenResponse);
     }
 }

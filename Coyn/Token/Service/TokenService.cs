@@ -5,9 +5,13 @@ using System.Text;
 using Coyn.Databases;
 using Coyn.Exception;
 using Coyn.Extension;
+using Coyn.Plaid;
 using Coyn.Token.Data;
 using Coyn.Token.Model;
 using Coyn.User.Data;
+using Going.Plaid.Entity;
+using Going.Plaid.Item;
+using Going.Plaid.Link;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -17,11 +21,14 @@ public class TokenService: ITokenService
 {
     private readonly IConfiguration _configuration;
 
+    private readonly PlaidService _plaidService;
+
     private readonly ApplicationApiDbContext _apiDbContext;
     
-    public TokenService(IConfiguration configuration, ApplicationApiDbContext apiDbContext)
+    public TokenService(IConfiguration configuration, PlaidService plaidService, ApplicationApiDbContext apiDbContext)
     {
         _configuration = configuration;
+        _plaidService = plaidService;
         _apiDbContext = apiDbContext;
     }
 
@@ -38,7 +45,7 @@ public class TokenService: ITokenService
             .Append(new Claim(ClaimTypes.PrimarySid, currentUser.Id.ToString()));
         
         var secretToken = _configuration.GetSection("AppSettings:Token").Value;
-        var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(secretToken));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretToken));
         var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
 
         var serverTokenExpireDate = DateTime.Now.AddDays(1);
@@ -64,7 +71,7 @@ public class TokenService: ITokenService
     {
         var refreshTokenExpireDate = DateTime.Now.AddDays(7);
         var refreshTokeId = Guid.NewGuid();
-        var refreshTokenEntity = new RefreshTokenEntity()
+        var refreshTokenEntity = new RefreshTokenEntity
         {
             Id = refreshTokeId,
             User = currentUser,
@@ -91,7 +98,7 @@ public class TokenService: ITokenService
         var key = _configuration.GetSection("AppSettings:Token").Value;
         if (key == null) throw new CoynException(HttpStatusCode.InternalServerError, "Key Not Found.");
         var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
-        var validationParameters = new TokenValidationParameters()
+        var validationParameters = new TokenValidationParameters
         {
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
             ValidateIssuerSigningKey = true,
@@ -113,5 +120,40 @@ public class TokenService: ITokenService
         var user = foundRefreshToken.User;
         _apiDbContext.RefreshTokens.Remove(foundRefreshToken);
         return await CreateServerToken(user);
+    }
+    
+    /// <summary> The ExchangePublicToken function exchanges a public token for an access token.</summary>
+    /// 
+    /// <param name="plaidExchangeTokenRequest"></param>
+    /// 
+    /// <returns> An itempublictokenexchangeresponse object.</returns>
+    public async Task<ItemPublicTokenExchangeResponse> ExchangePlaidPublicTokenAsync(
+        PlaidExchangeTokenRequest plaidExchangeTokenRequest)
+    {
+        var itemPublicTokenExchangeRequest = new ItemPublicTokenExchangeRequest
+        {
+            PublicToken = plaidExchangeTokenRequest.PublicToken
+        };
+        var itemPublicTokenExchangeResponse = await _plaidService.PlaidClient.ItemPublicTokenExchangeAsync(itemPublicTokenExchangeRequest);
+        return itemPublicTokenExchangeResponse;
+    }
+    
+    /// <summary> The CreateLinkToken function creates a link token for the user.</summary>
+    ///
+    /// <param name="userEntity"> The user entity</param>
+    ///
+    /// <returns> A linktokencreateresponse object.</returns>
+    public async Task<LinkTokenCreateResponse> CreatePlaidLinkTokenAsync(UserEntity userEntity)
+    {
+        var linkTokenCreateRequest = new LinkTokenCreateRequest
+        {
+            User = new LinkTokenCreateRequestUser { EmailAddress = userEntity.Email, ClientUserId = userEntity.Id.ToString()},
+            Products = new [] {  Products.Assets, Products.Auth },
+            ClientName = "Coyn",
+            CountryCodes = new [] { CountryCode.Us },
+            Language = Language.English
+        };
+        var linkTokenCreateResponse = await _plaidService.PlaidClient.LinkTokenCreateAsync(linkTokenCreateRequest);
+        return linkTokenCreateResponse;
     }
 }

@@ -3,8 +3,11 @@ using Coyn.Databases;
 using Coyn.Exception;
 using Coyn.Plaid;
 using Coyn.Token.Service;
+using Coyn.Transaction.Service;
 using Coyn.User.Service;
+using Coyn.Utility;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -41,8 +44,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddSingleton<IPlaidService, PlaidService>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddSingleton<PlaidService>();
 builder.Services.AddHttpContextAccessor();
+
+builder.Services.Configure<JsonOptions>(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
+});
 
 var app = builder.Build();
 

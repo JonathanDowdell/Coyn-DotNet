@@ -1,3 +1,5 @@
+using Coyn.Token.Model;
+using Coyn.Transaction.Model;
 using Coyn.User.Data;
 using Going.Plaid;
 using Going.Plaid.Entity;
@@ -10,11 +12,17 @@ namespace Coyn.Plaid;
 
 public class PlaidService: IPlaidService
 {
-    private readonly PlaidClient _plaidClient;
+    public readonly PlaidClient PlaidClient;
     
+
+    /// <summary> The PlaidService function is used to create a PlaidClient object and return it.</summary>
+    ///
+    /// <param name="configuration"> Configuration</param>
+    ///
+    /// <returns> A plaidclient object.</returns>
     public PlaidService(IConfiguration configuration)
     {
-        _plaidClient = new PlaidClient(
+        PlaidClient = new PlaidClient(
             Environment.Sandbox,
             clientId: configuration.GetSection("AppSettings:ClientID").Value,
             secret: configuration.GetSection("AppSettings:SandboxKey").Value);
@@ -26,7 +34,7 @@ public class PlaidService: IPlaidService
     /// <param name="userEntity"> The user entity</param>
     ///
     /// <returns> A linktokencreateresponse object.</returns>
-    public async Task<LinkTokenCreateResponse> CreateLinkToken(UserEntity userEntity)
+    public async Task<LinkTokenCreateResponse> CreateLinkTokenAsync(UserEntity userEntity)
     {
         var linkTokenCreateRequest = new LinkTokenCreateRequest
         {
@@ -36,33 +44,33 @@ public class PlaidService: IPlaidService
             CountryCodes = new [] { CountryCode.Us },
             Language = Language.English
         };
-        var linkTokenCreateResponse = await _plaidClient.LinkTokenCreateAsync(linkTokenCreateRequest);
+        var linkTokenCreateResponse = await PlaidClient.LinkTokenCreateAsync(linkTokenCreateRequest);
         return linkTokenCreateResponse;
     }
 
     /// <summary> The ExchangePublicToken function exchanges a public token for an access token.</summary>
-    ///
-    ///
+    /// <param name="plaidExchangeTokenRequest"></param>
     /// <returns> An itempublictokenexchangeresponse object.</returns>
-    public async Task<ItemPublicTokenExchangeResponse> ExchangePublicToken()
+    public async Task<ItemPublicTokenExchangeResponse> ExchangePublicTokenAsync(
+        PlaidExchangeTokenRequest plaidExchangeTokenRequest)
     {
-        var itemPublicTokenExchangeResponse = await _plaidClient.ItemPublicTokenExchangeAsync(new ItemPublicTokenExchangeRequest());
+        var itemPublicTokenExchangeRequest = new ItemPublicTokenExchangeRequest
+        {
+            PublicToken = plaidExchangeTokenRequest.PublicToken
+        };
+        var itemPublicTokenExchangeResponse = await PlaidClient.ItemPublicTokenExchangeAsync(itemPublicTokenExchangeRequest);
         return itemPublicTokenExchangeResponse;
     }
 
-    /// <summary> The GetTransactions function retrieves transactions from Plaid for a given access token.</summary>
-    ///
+    /// <summary> The GetTransactionsAsync function retrieves transactions from Plaid for a given access token.</summary>
+    /// 
     /// <param name="accessToken"> The access token for the user</param>
-    /// <param name="cursor?"> The cursor value represents the last update requested</param>
-    ///
-    /// <returns> An ienumerable of transaction objects.</returns>
-    public async Task<IEnumerable<Going.Plaid.Entity.Transaction>> GetTransactions(string accessToken, string? cursor)
+    /// <param name="cursor?"> ///     the access token to use for the request.
+    /// </param>
+    /// <returns> A transactionsresponse object that contains an array of transaction objects and a cursor string.</returns>
+    // ReSharper disable once InvalidXmlDocComment
+    public async Task<TransactionsResponse> GetTransactionsAsync(string accessToken, string? cursor)
     {
-        var transactionsSyncRequest = new TransactionsSyncRequest();
-        if (cursor != null) transactionsSyncRequest.Cursor = cursor;
-        transactionsSyncRequest.AccessToken = accessToken;
-        var transactionsSyncResponse = await _plaidClient.TransactionsSyncAsync(transactionsSyncRequest);
-        var transactions = transactionsSyncResponse.Added;
-        return transactions;
+        throw new NotImplementedException();
     }
 }

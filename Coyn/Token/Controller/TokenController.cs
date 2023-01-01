@@ -1,7 +1,7 @@
-using Coyn.Plaid;
 using Coyn.Token.Model;
 using Coyn.Token.Service;
 using Coyn.User.Service;
+using Going.Plaid.Item;
 using Going.Plaid.Link;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,17 +12,13 @@ namespace Coyn.Token.Controller;
 [Route("token"), Authorize]
 public class TokenController: Microsoft.AspNetCore.Mvc.Controller
 {
-
-    private readonly IPlaidService _plaidService;
-    
     private readonly ITokenService _tokenService;
 
     private readonly IUserService _userService;
     
-    public TokenController(ITokenService tokenService, IPlaidService plaidService, IUserService userService)
+    public TokenController(ITokenService tokenService, IUserService userService)
     {
         _tokenService = tokenService;
-        _plaidService = plaidService;
         _userService = userService;
     }
 
@@ -40,10 +36,21 @@ public class TokenController: Microsoft.AspNetCore.Mvc.Controller
     /// <summary> The CreateLinkToken function creates a link token for the current user.</summary>
     ///
     /// <returns> A linktokencreateresponse object.</returns>
-    [HttpPost("link")]
+    [HttpPost("plaid/link")]
     public async Task<LinkTokenCreateResponse> CreateLinkToken()
     {
         var userEntity = await _userService.GetCurrentUserAsync();
-        return await _plaidService.CreateLinkToken(userEntity);
+        return await _tokenService.CreatePlaidLinkTokenAsync(userEntity);
+    }
+
+    /// <summary> The ExchangePlaidToken function exchanges a public token for an access token.</summary>
+    ///
+    /// <param name="plaidExchangeTokenRequest"> The public token returned by plaid's /item/public_token/exchange endpoint.</param>
+    ///
+    /// <returns> An itempublictokenexchangeresponse object.</returns>
+    [HttpPost("plaid/exchange")]
+    public async Task<ItemPublicTokenExchangeResponse> ExchangePlaidToken(PlaidExchangeTokenRequest plaidExchangeTokenRequest)
+    {
+        return await _tokenService.ExchangePlaidPublicTokenAsync(plaidExchangeTokenRequest);
     }
 }

@@ -35,8 +35,15 @@
       <Folder Include="Account\Data" />
       <Folder Include="Account\Model" />
       <Folder Include="Account\Service" />
-      <Folder Include="Transaction\Model" />
-      <Folder Include="Transaction\Service" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Transaction\Model\TransactionInstitutionRequest.cs">
+        <DependentUpon>TransactionsRequest.cs</DependentUpon>
+      </Compile>
+      <Compile Update="Transaction\Model\TransactionInstitutionResponse.cs">
+        <DependentUpon>TransactionsResponse.cs</DependentUpon>
+      </Compile>
     </ItemGroup>
 
 </Project>
