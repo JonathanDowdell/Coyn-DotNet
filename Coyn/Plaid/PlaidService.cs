@@ -36,18 +36,15 @@ public class PlaidService: IPlaidService
             throw new System.Exception("Plaid Environment is required");
         }
 
-        PlaidClient = new PlaidClient
-        (
-            environment switch
-            {
-                "sandbox" => Environment.Sandbox,
-                "development" => Environment.Development,
-                "production" => Environment.Production,
-                _ => throw new System.Exception("Invalid Plaid environment")
-            },
-            clientId,
-            secret
-        );
+        var plaidEnvironment = environment switch
+        {
+            "sandbox" => Environment.Sandbox,
+            "development" => Environment.Development,
+            "production" => Environment.Production,
+            _ => throw new System.Exception("Invalid Plaid environment")
+        };
+        
+        PlaidClient = new PlaidClient(plaidEnvironment, clientId, secret);
     }
 
     /// <summary> The CreateLinkToken function creates a link token for the user.</summary>
