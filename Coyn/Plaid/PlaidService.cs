@@ -22,11 +22,32 @@ public class PlaidService: IPlaidService
     /// <returns> A plaidclient object.</returns>
     public PlaidService(IConfiguration configuration)
     {
-        PlaidClient = new PlaidClient(
-            Environment.Sandbox,
-            clientId: configuration.GetSection("AppSettings:ClientID").Value,
-            secret: configuration.GetSection("AppSettings:SandboxKey").Value);
-        Console.WriteLine("Init - PlaidService");
+        var clientId = configuration.GetSection("AppSettings:ClientID").Value;
+        var secret = configuration.GetSection("AppSettings:SandboxKey").Value;
+        var environment = configuration.GetSection("AppSettings:Environment").Value;
+        
+        if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(secret))
+        {
+            throw new System.Exception("Plaid Client ID and/or Secret are required");
+        }
+
+        if (string.IsNullOrEmpty(environment))
+        {
+            throw new System.Exception("Plaid Environment is required");
+        }
+
+        PlaidClient = new PlaidClient
+        (
+            environment switch
+            {
+                "sandbox" => Environment.Sandbox,
+                "development" => Environment.Development,
+                "production" => Environment.Production,
+                _ => throw new System.Exception("Invalid Plaid environment")
+            },
+            clientId,
+            secret
+        );
     }
 
     /// <summary> The CreateLinkToken function creates a link token for the user.</summary>
