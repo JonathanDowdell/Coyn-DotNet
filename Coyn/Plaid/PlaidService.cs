@@ -36,7 +36,7 @@ public class PlaidService: IPlaidService
             throw new System.Exception("Plaid Environment is required");
         }
 
-        var plaidEnvironment = environment switch
+        var plaidEnvironment = environment.ToLower() switch
         {
             "sandbox" => Environment.Sandbox,
             "development" => Environment.Development,

@@ -16,8 +16,25 @@ var builder = WebApplication.CreateBuilder(args);
 // Databases
 builder.Services.AddDbContext<ApplicationApiDbContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("CoynConnectionString");
-    options.UseNpgsql(connectionString);
+    var host = builder.Configuration.GetSection("AppSettings:Host").Value;
+    var port = builder.Configuration.GetSection("AppSettings:Port").Value;
+    var database = builder.Configuration.GetSection("AppSettings:Database").Value;
+    var username = builder.Configuration.GetSection("AppSettings:Username").Value;
+    var password = builder.Configuration.GetSection("AppSettings:Password").Value;
+    
+    if (string.IsNullOrEmpty(host) || string.IsNullOrEmpty(port) || string.IsNullOrEmpty(database) || string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+    {
+        throw new Exception("Database configuration is missing");
+    }
+
+    // MariaDB Connection String
+    var connectionString = $"Server={host};Port={port};Database={database};User={username};Password={password};";
+
+    options
+        .UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
+        .LogTo(Console.WriteLine, LogLevel.Information)
+        .EnableSensitiveDataLogging()
+        .EnableDetailedErrors();
 });
 // builder.Services.AddDbContext<ApplicationApiDbContext>(options => options.UseInMemoryDatabase("Coyn"));
 
@@ -32,6 +49,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         var secretToken = builder.Configuration.GetSection("AppSettings:Token").Value;
+
+        if (string.IsNullOrEmpty(secretToken))
+        {
+            throw new Exception("Secret token is not set in appsettings.json");
+        }
+        
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,

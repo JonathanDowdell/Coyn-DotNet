@@ -1,86 +1,32 @@
 version: '3.1'
 
-#services:
-#  db:
-#    image: mysql
-#    restart: always
-#    environment:
-#      MYSQL_DATABASE: 'db'
-#      MYSQL_USER: 'user'
-#      MYSQL_PASSWORD: 'password'
-#      MYSQL_ROOT_PASSWORD: 'password'
-#    ports:
-#      - '3306:3306'
-#    expose:
-#      - '3306'
+# Path: Coyn/docker-compose.yml
+
 services:
-  
-#  db:
-#    image: mysql
-#    restart: always
-#    container_name: mysql
-#    environment:
-#      MYSQL_DATABASE: 'coyn'
-#      MYSQL_USER: 'user'
-#      MYSQL_PASSWORD: 'password'
-#      MYSQL_ROOT_PASSWORD: 'password'
-#    ports:
-#      - '3306:3306'
-#      - '33060:33060'
-#    networks:
-#      - coyn
-  db:
-    image: postgres
-    restart: always
-    container_name: db
-    environment:
-      POSTGRES_DB: 'coyn'
-      POSTGRES_USER: 'user'
-      POSTGRES_PASSWORD: 'password'
-    ports:
-      - "5432:5432"
-    networks:
-      - coyn
-  
-  coyn_app:
-    container_name: coyn_app
+
+  api:
+    container_name: coyn_api
     build:
       context: .
-      dockerfile: Dockerfile
-    image: coyn
-    restart: always
+      dockerfile: ./Dockerfile
     ports:
-      - "5225:80"
-      - "5005:5005"
-    networks: 
-      - coyn
-
-#  postgres:
-#    container_name: postgres
-#    image: postgres:latest
-#    restart: always
-#    ports:
-#      - "5432:5432"
-#    env_file:
-#      - docker.env
-#    networks:
-#      - postgres
-#
-#  pgadmin:
-#    links:
-#      - postgres:postgres
-#    container_name: pgadmin
-#    image: dpage/pgadmin4
-#    ports:
-#      - "8080:80"
-#    env_file:
-#      - docker.env
-#    networks:
-#      - postgres
-
+        - "5225:80"
+    depends_on:
+      - db
+    
+      
+  db:
+    container_name: coyn_db
+    image: mariadb
+    restart: always
+    environment:
+      MARIADB_USER: coyn
+      MARIADB_PASSWORD: ZVzmWmtAJviC3G
+      MARIADB_ROOT_PASSWORD: PGnMM7KFRykcjA
+      MARIADB_DATABASE: coyn
+    ports:
+      - '3309:3306'
 
 networks:
-  postgres:
-    driver: bridge
   coyn:
     driver: bridge
