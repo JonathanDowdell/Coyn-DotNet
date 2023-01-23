@@ -19,11 +19,8 @@ services:
     container_name: coyn_db
     image: mariadb
     restart: always
-    environment:
-      MARIADB_USER: coyn
-      MARIADB_PASSWORD: ZVzmWmtAJviC3G
-      MARIADB_ROOT_PASSWORD: PGnMM7KFRykcjA
-      MARIADB_DATABASE: coyn
+    env_file:
+      - docker.env
     ports:
       - '3309:3306'
 
